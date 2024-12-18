@@ -1,0 +1,10 @@
+ch4
+$ctrl
+str=cov nao=8 nae=8 nmul=1 frgtyp=sao chinst=1
+$end
+$frag
+
+$end
+$orb
+
+$end

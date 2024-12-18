@@ -28,56 +28,30 @@ common /bnd_mat/bond_vec_mat
 
       Data Zer,One,Eps/0.D0,1.D0,1.0D-20/
 
-!print*,'name_gandu',name
-!if(name.eq.'orb')then
-!do i=1,N
-!do j=1,N
-!A(i,j)=orb_ovlp_mat1(col1(1,i),col1(2,j))
-!enddo
-!enddo
-!endif
-!
-!print*,'col(i)',(col1(1,i),i=1,N),'col(j)',(col1(2,j),j=1,N)
 
 if(name.eq.'str')then
-do i=1,N
-do j=1,N
-A(i,j)=ovlp_mat_norm(col(i),col(j))
-enddo
-enddo
+  do i=1,N
+    do j=1,N
+      A(i,j)=ovlp_mat_norm(col(i),col(j))
+    enddo
+  enddo
 endif
 
 if(name.eq.'ind')then
-do i=1,N
-do j=1,N
-A(i,j)=ind_mat(i,j)
-enddo
-!print*,'MatLDR:A',(A(i,j),j=1,N)
-enddo
-!write(*,102),(ind_mat(i,j),j=1,numstr)
+  do i=1,N
+    do j=1,N
+      A(i,j)=ind_mat(i,j)
+    enddo
+  enddo
 endif
-if(name.eq.'bnv')then
-do i=1,N
-do j=1,N
-A(i,j)=bond_vec_mat(i,j)
-enddo
-enddo
-endif
-!if(N.eq.14.and.name.eq.'str'.and.faiil.eq.0)then
-!print*,'col(i)',(col(i),i=1,N),'col(j)',(col(j),j=1,N)
-!do i=1,N
-!print*,'orb_ovlp_mat1_MatL',(ovlp_mat_norm(col(i),col(j)),j=1,N)
-!enddo
-!endif
-!      IW  = IVBF(1)
-!      IER = IVBF(3)
-!     write(0,*)"NDIM = ",Ndim
-!     write(0,*)"Size = ",Size(VT,1),Size(VT,2),Size(VT)
-!do i=1,N
-!print*,'MatLDR:A',(A(i,j),j=1,N)
-!enddo
 
-!print*,'N',N,Zer
+if(name.eq.'bnv')then
+  do i=1,N
+    do j=1,N
+      A(i,j)=bond_vec_mat(i,j)
+    enddo
+  enddo
+endif
 
       do i = 1, N
         D(i) = Zer
@@ -99,7 +73,6 @@ endif
       iter = 0
       Amax = One
       do while(Amax .gt. Eps)
-!print*,'Eps',Eps,Amax
           iter = iter + 1
           Amax = Zer
           do i = 2, N
@@ -112,17 +85,9 @@ endif
             if(dabs(Aji) .gt. Amax) Amax = dabs(Aji)
             if(dabs(Aij) .lt. Eps .and. dabs(Aji) .lt. Eps) cycle
             Call TwoSideJacobi(i,j,Aii,Ajj,Aij,Aji,U,VT,A,N)
-!print*,'Aij',i,j,Aii,Aij,Ajj,Aji
           end do
           end do
       end do
-!print*,'Aij***',i,j,Aii,Aij,Ajj,Aji
-!do i=1,3
-!print*,'U',(U(i,j),j=1,3)
-!enddo
-!do i=1,3
-!print*,'VT',(VT(i,j),j=1,3)
-!enddo
 
       do i = 1,N
         D(i) = A(i,i)
@@ -133,7 +98,6 @@ endif
         Stop
       endif
 
-!     bubble sort the eigenvalues and eigenvectors
       Do I = 1, N-1
         tmp = dabs(D(I))
         K = I
@@ -165,10 +129,12 @@ endif
         Endif
       Enddo
       Call MatTran(VT,N)
-ovlp=1.0
-do i=1,N
-ovlp=ovlp*D(i)
-enddo
-!print*,'MatDLR:D',(D(i),i=1,N)!,1.0-ovlp
+
+! diadonal elementsare stored in D
+
+      ovlp=1.0
+      do i=1,N
+        ovlp=ovlp*D(i)
+      enddo
       Return
       End

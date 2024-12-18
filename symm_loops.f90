@@ -14,12 +14,6 @@ integer::ls1,ls2,ls3,ls4,ls5,ls6,ls7,ls8,ls9,ls10,ls11,ls12,ls13,ls14,connectivi
 connectivity_row(20,20),nn,nnn(10)
 
 print*,'enter_symm_loops',k1,k2
-!do i3=1,natom
-!print*,'*nn_group*',nelimt(i3),(nn_group(i3,i4),i4=1,nelimt(i3))
-!enddo
-!do i3=1,natom
-!print*,'*sl_group*',(sl_group(i3,i4),i4=1,nelimt(i3))
-!enddo
 nsl=0
 nsl1=0
 ii=0
@@ -29,143 +23,105 @@ i5=0
 flg=0
 maxlp=15
 loop_score1=0
-!do i=1,natom
-!print*,'sourav1'
-!print*,'tot_orb',tot_orb(i)
-!enddo
-!do i=1,natom
-!print*,'nelimt',nelimt(i),tot_orb(i)
-!enddo
 l=0
+
 do i=1,natom
-if(k1.eq.tot_orb(i))goto 101
+  if(k1.eq.tot_orb(i)) exit
 enddo
 
-101 do j=1,nelimt(i)
-!print*,'loop0'
-do i6=1,maxlp
-orbs2(i6)=0
-enddo
-!do i6=1,1
-!if(orbs2(i6).eq.nn_group(i,j))goto 205
-!enddo
-!orbs2(1)=nn_group(i,j)
-ls1=0
-!print*,'k2,nn_group',k2,nn_group(i,j),i,j
-if(k2.eq.nn_group(i,j))then
-iii=iii+1
-ls1=ls1+1
-connectivity(iii,1)=k1
-connectivity(iii,2)=k2
-nloop(iii)=ls1+1
-!print*,'nloopnloopnloop',nloop(iii)
-goto 205
-else
-if(k1.ne.nn_group(i,j))then
-!do i6=1,ii
-!if(nn_group(i,j).eq.orbs1(i6))goto 205
-!enddo
-l=1
-ii=ii+1
-orbs3(ii)=nn_group(i,j)
-!print*,'orbs3',orbs3(ii)
-endif
-endif
-205 enddo
+loop1:do j=1,nelimt(i)
+  do i6=1,maxlp
+    orbs2(i6)=0
+  enddo
+  ls1=0
+  if(k2.eq.nn_group(i,j))then
+    iii=iii+1
+    ls1=ls1+1
+    connectivity(iii,1)=k1
+    connectivity(iii,2)=k2
+    nloop(iii)=ls1+1
+    cycle loop1
+  else
+    if(k1.ne.nn_group(i,j))then
+      l=1
+      ii=ii+1
+      orbs3(ii)=nn_group(i,j)
+    endif
+  endif
+enddo loop1
 
-!if(l.eq.1)ls1=ls1+1
 ii0=ii
-!!! loop 1
 do j1=1,ii0
-ii=1
-!print*,'loop1'
-do i6=1,maxlp
-orbs2(i6)=0
-enddo
-!do i6=1,1
-!if(orbs2(i6).eq.orbs3(j1))goto 204
-!enddo
-orbs2(1)=orbs3(j1)
-!print*,'orbs2**',(orbs2(i6),i6=1,1)
-l=0
-ls2=ls1
-do i=1,natom
-if(orbs3(j1).eq.tot_orb(i))goto 102
-enddo
-goto 204
-102 do i1=1,nelimt(i)
-!print*,'k2,nn_group',k2,nn_group(i,i1),i,i1
-if(k2.eq.nn_group(i,i1))then
-iii=iii+1
-ls2=ls2+1
-connectivity(iii,1)=k1
-connectivity(iii,2)=orbs2(1)
-connectivity(iii,3)=k2
-nloop(iii)=ls2+1
-!print*,'nloopnloopnloop',nloop(iii)
-goto 204
-else
-if(k1.ne.nn_group(i,i1))then
-!do i6=1,ii
-!if(nn_group(i,i1).eq.orbs1(i6))goto 301
-!enddo
-l=1
-ii=ii+1
-orbs1(ii)=nn_group(i,i1)
-!print*,'orbs1',orbs1(ii)
-endif
-endif
+  ii=1
+  do i6=1,maxlp
+    orbs2(i6)=0
+  enddo
+  orbs2(1)=orbs3(j1)
+  l=0
+  ls2=ls1
+  do i=1,natom
+    if(orbs3(j1).eq.tot_orb(i))goto 102
+  enddo
+  goto 204
+  102 do i1=1,nelimt(i)
+  if(k2.eq.nn_group(i,i1))then
+    iii=iii+1
+    ls2=ls2+1
+    connectivity(iii,1)=k1
+    connectivity(iii,2)=orbs2(1)
+    connectivity(iii,3)=k2
+    nloop(iii)=ls2+1
+    goto 204
+  else
+    if(k1.ne.nn_group(i,i1))then
+      l=1
+      ii=ii+1
+      orbs1(ii)=nn_group(i,i1)
+    endif
+  endif
 
 301 enddo
+
+
 if(l.eq.1)ls2=ls2+l
-ii1=ii
+  ii1=ii
 !!! loop 2
-do j2=2,ii1
-ii=ii1
-!print*,'loop2'
-do i6=2,maxlp
-orbs2(i6)=0
-enddo
-do i6=1,1
-if(orbs2(i6).eq.orbs1(j2))goto 203
-enddo
-orbs2(2)=orbs1(j2)
-!print*,'orbs2',(orbs2(i6),i6=1,2)
-l=0
-ls3=ls2
-do i=1,natom
-if(orbs1(j2).eq.tot_orb(i))goto 103
-enddo
-
-goto 204
-103 do i1=1,nelimt(i)
-!print*,'k2,nn_group',k2,nn_group(i,i1),i,i1
-if(k2.eq.nn_group(i,i1))then
-iii=iii+1
-ls3=ls3+1
-connectivity(iii,1)=k1
-do i6=1,2
-connectivity(iii,i6+1)=orbs2(i6)
-enddo
-connectivity(iii,4)=k2
-nloop(iii)=ls3+1
-!print*,'nloopnloopnloop',nloop(iii)
-goto 203
-else
-if(k1.ne.nn_group(i,i1))then
-!do i6=1,ii
-!if(nn_group(i,i1).eq.orbs1(i6))goto 302
-!enddo
-ii=ii+1
-l=1
-orbs1(ii)=nn_group(i,i1)
-!print*,'orbs1',orbs1(ii)
-endif
-endif
-
-302 enddo
-ii2=ii
-if(l.eq.1)ls3=ls3+l
+  do j2=2,ii1
+    ii=ii1
+    do i6=2,maxlp
+      orbs2(i6)=0
+    enddo
+    do i6=1,1
+      if(orbs2(i6).eq.orbs1(j2))goto 203
+    enddo
+    orbs2(2)=orbs1(j2)
+    l=0
+    ls3=ls2
+    do i=1,natom
+      if(orbs1(j2).eq.tot_orb(i))goto 103
+    enddo
+    goto 204
+    103 do i1=1,nelimt(i)
+    if(k2.eq.nn_group(i,i1))then
+      iii=iii+1
+      ls3=ls3+1
+      connectivity(iii,1)=k1
+      do i6=1,2
+        connectivity(iii,i6+1)=orbs2(i6)
+      enddo
+      connectivity(iii,4)=k2
+      nloop(iii)=ls3+1
+      goto 203
+    else
+      if(k1.ne.nn_group(i,i1))then
+        ii=ii+1
+        l=1
+        orbs1(ii)=nn_group(i,i1)
+      endif
+    endif
+  enddo
+  if(l.eq.1)ls3=ls3+l
+  ii2=ii
 !!! loop 3
 do j3=ii1+1,ii2
 ii=ii2

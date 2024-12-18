@@ -10,17 +10,17 @@ import os
 #import program_main
 import subprocess
 import sys
+import cisvb
+import numpy as np
 
 
-class Input_creater:
+class Ctrl_Input:
     def __init__(self, root):
-        self.root = root
-        self.root.title("Input File Creator")
-
 # initialise disctionary to store control data
         self.ctrl_inputs={}
         self.input_text=''
         self.fname=''
+        self.other_inp=True
  
         # Main Frame
         self.frame = ttk.Frame(root, padding="10")
@@ -29,25 +29,11 @@ class Input_creater:
         # Input Fields
         self.entries = {}
         self.keywords = ["str", "nao", "nae", "nmul", "frgtyp", "chinst"]
-        self.create_input_fields()
+        self.create_ctrl_pans()
 
-        # Buttons
-        self.create_buttons()
 
-        # Fragment Input Pane
-        self.fragment_frame = None
-        self.fragment_entries = []
-        self.description = ""
 
-        self.orbital_frame = None
-        self.orbital_entries = []
-        self.description_orb = ""
-
-        self.keywd_frame = None
-        self.keywd_entries = []
-        self.description_key = ""
-
-    def create_input_fields(self):
+    def create_ctrl_pans(self):
         ttk.Label(self.frame, text="Enter Ctrl Keywords").grid(row=1, column=0, columnspan=2, pady=5)
         ttk.Label(self.frame, text="file_name").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         self.file_name = ttk.Entry(self.frame, width=20)
@@ -60,116 +46,38 @@ class Input_creater:
             self.entries[key] = entry
 
 
-    def create_buttons(self):
-        fragment_button = ttk.Button(self.frame, text="Fragments", command=self.create_fragment_section)
-        fragment_button.grid(row=8, column=0, padx=5, pady=10)
 
-        orbital_button = ttk.Button(self.frame, text="Orbitals", command=self.create_orbital_section)
-        orbital_button.grid(row=8, column=1, padx=5, pady=10)
+#    def go_to_output(self):
+#        self.frame.destroy()  # Destroy the output frame
+#        InputCreator(self.root)  # Switch back to the input frame
+#
 
-        keywd_button = ttk.Button(self.frame, text="spatial keywords", command=self.create_keywd_section)
-        keywd_button.grid(row=8, column=2, padx=5, pady=10)
-
-        generate_button = ttk.Button(self.frame, text="Generate Input", command=self.generate_input)
-        generate_button.grid(row=12, column=0, padx=5, pady=10, sticky=tk.E)
-
-        reset_button = ttk.Button(self.frame, text="Reset", command=self.reset_fields)
-        reset_button.grid(row=12, column=2, padx=5, pady=10, sticky=tk.W)
-
-
-    def go_to_output(self):
-        self.frame.destroy()  # Destroy the output frame
-        InputCreator(self.root)  # Switch back to the input frame
-
-
-    def reset_fields(self):
-        for entry in self.entries.values():
-            entry.delete(0, tk.END)
-        if self.fragment_entries:
-            for pane in self.fragment_entries:
-                for field in pane:
-                    field.delete(0, tk.END)
-        if self.orbital_entries:
-            for pane in self.orbital_entries:
-                for field in pane:
-                    field.delete(0, tk.END)
-
-################################################################################
-#### fragment section starts here : first ##
-################################################################################
-    def create_fragment_section(self):
-        # Create a new frame for fragment inputs if it doesn't exist
-        if self.fragment_frame is None:
-            self.fragment_frame = tk.Toplevel(self.root, padx=10, pady=10)
-            self.fragment_frame.title("Fragment inputs")
-            self.fragment_frame.geometry("500x300")
-
-#        # Clear existing fragment panes
-#        for widget in self.fragment_frame.winfo_children():
-#            widget.destroy()
-        self.fragment_entries = []
-
-        # Input for description of fragments
-        ttk.Label(self.fragment_frame, text="Description of Fragments").grid(
-            row=0, column=2, columnspan=2, pady=5
-        )
-        desc_entry = ttk.Entry(self.fragment_frame, width=60)
-        desc_entry.grid(row=1, column=2, columnspan=2, pady=5)
-        ttk.Button(
-            self.fragment_frame, text="Analyze Description", command=lambda: self.analyze_fragments(desc_entry.get())
-        ).grid(row=2, column=2, columnspan=2, pady=10)
-
-    def analyze_fragments(self, description):
-        self.description = description
-        try:
-            # Calculate the total number of fragments
-            num_fragments = self.calculate_fragments(description)
-            if num_fragments <= 0:
-                raise ValueError("Number of fragments must be positive.")
-        except ValueError:
-            messagebox.showerror("Invalid Input", "Please enter a valid description of fragments.")
-            return
-
-        # Clear existing fragment panes
-        for widget in self.fragment_frame.winfo_children():
-            widget.destroy()
-
-        # Create input panes for each fragment
-        ttk.Label(self.fragment_frame, text=f"Number of Fragments: {num_fragments}").grid(
-            row=0, column=0, columnspan=2, pady=5
-        )
-        for i in range(num_fragments):
-            row = i + 1
-            ttk.Label(self.fragment_frame, text=f"Fragment {i + 1} Type").grid(row=row, column=0, padx=5, pady=5, sticky=tk.W)
-            type_entry = ttk.Entry(self.fragment_frame, width=10)
-            type_entry.grid(row=row, column=1, padx=5, pady=5)
-
-            ttk.Label(self.fragment_frame, text="Atom Number").grid(row=row, column=2, padx=5, pady=5, sticky=tk.W)
-            number_entry = ttk.Entry(self.fragment_frame, width=10)
-            number_entry.grid(row=row, column=3, padx=5, pady=5)
-
-            self.fragment_entries.append((type_entry, number_entry))
-
-    def calculate_fragments(self, description):
-        """
-        Parse the description and calculate the total number of fragments.
-        """
-        total_fragments = 0
-        groups = description.split()
-        for group in groups:
-            if '*' in group:
-                # Handle compact notation like "3*4"
-                match = re.match(r"(\d+)\*(\d+)", group)
-                if match:
-                    total_fragments += int(match.group(2))
-            else:
-                # Handle individual groups
-                total_fragments += 1
-        return total_fragments
+#    def reset_fields(self):
+#        for entry in self.entries.values():
+#            entry.delete(0, tk.END)
+#        if self.fragment_entries:
+#            for pane in self.fragment_entries:
+#                for field in pane:
+#                    field.delete(0, tk.END)
+#        if self.orbital_entries:
+#            for pane in self.orbital_entries:
+#                for field in pane:
+#                    field.delete(0, tk.END)
 
 ###################################################################################
 ########## orbital section starts here :
 ###################################################################################
+
+class Orb_Input:
+    def __init__(self,root):
+        self.frame = ttk.Frame(root, padding="10")
+        self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+        self.orbital_frame = None
+        self.assoatm_entries = []
+        self.assotyp_entries = []
+        self.description_orb = ""
+
 
     def create_orbital_section(self):
         # Create a new frame for orbital inputs if it doesn't exist
@@ -182,61 +90,45 @@ class Input_creater:
         for widget in self.orbital_frame.winfo_children():
             widget.destroy()
         self.orbital_entries = []
-
-        # Input for description of fragments
-        ttk.Label(self.orbital_frame, text="Description of orbitals").grid(
-            row=0, column=0, columnspan=2, pady=5
-        )
-        desc_entry = ttk.Entry(self.orbital_frame, width=40)
-        desc_entry.grid(row=1, column=0, columnspan=2, pady=5)
-        ttk.Button(
-            self.orbital_frame, text="Analyze Description", command=lambda: self.analyze_orbital(desc_entry.get())
-        ).grid(row=2, column=0, columnspan=2, pady=10)
+        self.assoatm_entries = []
+        self.assotyp_entries = []
+        self.analyze_orbital()
 
 
-    def analyze_orbital(self, description_orb):
-        self.description_orb = description_orb
-        try:
-            # Calculate the total number of orbitals
-            num_orbital = self.calculate_orbital(description_orb)
-            if num_orbital <= 0:
-                raise ValueError("Number of orbitals must be positive.")
-        except ValueError:
-            messagebox.showerror("Invalid Input", "Please enter a valid description of orbitals.")
-            return
+    def analyze_orbital(self):
+        self.other_inp=False
+        ctl_key = self.generate_input()  # calling generate_input to get ctrl values
+        num_orbital = int(ctl_key["nao"])  # read the number of active orbitals 
+#        print('nao', num_orbital)
+        self.other_inp=True
 
-        # Clear existing fragment panes
+        # Clear existing panes
         for widget in self.orbital_frame.winfo_children():
             widget.destroy()
 
-        # Create input panes for each fragment
-        ttk.Label(self.orbital_frame, text=f"Number of orbitals: {num_orbital}").grid(
+        # Create input panes for each active orbitals
+        ttk.Label(self.orbital_frame, text=f"Number of active orbitals: {num_orbital}").grid(
             row=0, column=0, columnspan=2, pady=5
         )
-        if num_orbital % 2 == 0:
-            j1=int(num_orbital/2)
-            j2=int(num_orbital/2)
-        else:
-            j1=int(num_orbital/2)
-            j2=int(num_orbital/2)+1
 
-        j=0
-        for i in range(j2):
-            j = j+1
-            row = i+1
-            ttk.Label(self.orbital_frame, text=f"orbital {j } ").grid(row=row, column=1, padx=5, pady=5, sticky=tk.W)
-            number_entry = ttk.Entry(self.orbital_frame, width=10)
-            number_entry.grid(row=row, column=2, padx=5, pady=5)
+#       creating the pane for getting orbital numbers
 
-            self.orbital_entries.append(number_entry)
-        for i in range(j1):
-            j = j+1
-            row = i+1
-            ttk.Label(self.orbital_frame, text=f"orbital {j } ").grid(row=row, column=3, padx=5, pady=5, sticky=tk.W)
-            number_entry = ttk.Entry(self.orbital_frame, width=10)
-            number_entry.grid(row=row, column=4, padx=5, pady=5)
+        ttk.Label(self.orbital_frame, text=f"associated atom num").grid(row=2, column=3, padx=5, pady=5, sticky=tk.W)
+#        ttk.Label(self.orbital_frame, text=f" Orbital type").grid(row=1, column=4, padx=5, pady=1, sticky=tk.W)
+        ttk.Label(self.orbital_frame, text=f"Sig-Pi/fragment").grid(row=2, column=4, padx=5, pady=5, sticky=tk.W)
+        for i in range(num_orbital):
+            ttk.Label(self.orbital_frame, text=f"active orbital {i+1} ").grid(row=i+3, column=1, padx=5, pady=5, sticky=tk.W)
+#       creating the pane for getting associated atom number
+            assoatm_entry = ttk.Entry(self.orbital_frame, width=10)
+            assoatm_entry.grid(row=i+3, column=3, padx=5, pady=5)
 
-            self.orbital_entries.append(number_entry)
+            self.assoatm_entries.append(assoatm_entry)
+#       creating the pane for getting associated atom number
+            assotyp_entry = ttk.Entry(self.orbital_frame, width=10)
+            assotyp_entry.grid(row=i+3, column=4, padx=5, pady=5)
+
+            self.assotyp_entries.append(assotyp_entry)
+        print(self.assotyp_entries, self.assoatm_entries)
 
 
     def calculate_orbital(self, description_orb):
@@ -255,9 +147,20 @@ class Input_creater:
                 # Handle individual groups
                 total_orbital += 1
         return total_orbital
+
+
 ################################################################################
 #### Spatial keyword section starts here : first ##
 ################################################################################
+
+class Spl_Keywd:
+    def __init__(self, root):
+        self.frame = ttk.Frame(root, padding="10")
+        self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.keywd_frame = None
+        self.keywd_entries = []
+        self.description_key = ""
+
     def create_keywd_section(self):
         # Create a new frame for fragment inputs if it doesn't exist
         if self.keywd_frame is None:
@@ -316,91 +219,118 @@ class Input_creater:
 
         ttk.Button(result_window, text="Close", command=result_window.destroy).pack(pady=5)
 
-    def generate_input(self):
-        # Collect standard inputs
-        self.fname=self.file_name.get()
-        for key, entry in self.entries.items():
-            try:
-                value = entry.get()
-                if value:
-                    self.ctrl_inputs[key]=value
-            except AttributeError:
-                raise TypeError(f"Expected tk.Entry, but got {type(entry)} for key {key}")
-            print('inputs',self.ctrl_inputs)
-
-        # Collect fragment inputs if available
-        fragment_inputs = [self.description]
-        for pane in self.fragment_entries:
-            fragment_type = pane[0].get()
-            fragment_number = pane[1].get()
-            if fragment_type and fragment_number:
-                fragment_inputs.append((fragment_type, fragment_number))
-            else:
-                raise ValueError(f"Invalid pane in fragment_entries: {pane}")
-
-        # collect orbital inputs if available
-        orbital_inputs = [self.description_orb]
-        for pane in self.orbital_entries:
-            orbital_number = pane.get()
-            if orbital_number:
-                orbital_inputs.append(orbital_number)
-            else:
-                raise ValueError(f"Invalid pane in orbital_entries: {pane}")
-
-        # collect spatial keyword inputs if available
-        keywd_inputs = [self.description_key]
-        for pane in self.keywd_entries:
-            keywd_type = pane[0].get()
-            keywd_number = pane[1].get()
-            if keywd_type and keywd_number:
-                keywd_inputs.append((keywd_type, keywd_number))
-            else:
-                raise ValueError(f"Invalid pane in keyword_entries: {pane}")
-
-        # Generate input string
-        self.input_text = f"{self.fname}\n"
-        self.input_text += "$ctrl\n"
-        self.input_text += " ".join(f"{key}={value}" for key, value in self.ctrl_inputs.items() if key != "fragments" and key != "orbital")
-        self.input_text += "\n$end"
-        self.input_text += "\n$frag\n"
-        self.input_text += f"{self.description}\n"
-        for frag in fragment_inputs[1:]:
-            self.input_text += f"{frag[0]} {frag[1]}\n"
-        self.input_text += "$end"
-        self.input_text += "\n$orb\n"
-        self.input_text += f"{self.description_orb}\n"
-        for orb in orbital_inputs[1:]:
-            self.input_text += f"{orb}\n"
-        self.input_text += "$end\n"
-        for keywd in keywd_inputs[1:]:
-            self.input_text += f"{keywd[0]} {keywd[1]}\n"
-
-        self.show_result(self.input_text)
-    
-
-    def get_data(self):
-        input_text1=self.input_text
-        return input_text1
-    def get_file_name(self):
-        print('file_name',self.fname)
-        return self.fname
+#class Creat_xmi_input:
+#    def __init__(self,root):
+#
+#    def generate_input(self):
+#        # Collect standard inputs
+#        self.fname=self.file_name.get()
+#        for key, entry in self.entries.items():
+#            try:
+#                value = entry.get()
+#                if value:
+#                    self.ctrl_inputs[key]=value
+#            except AttributeError:
+#                raise TypeError(f"Expected tk.Entry, but got {type(entry)} for key {key}")
+#        print('ctrl_inputs',self.ctrl_inputs)
+#        return(self.ctrl_inputs)
+#
+#        # Collect fragment inputs if available
+##        fragment_inputs = [self.description]
+##        for pane in self.fragment_entries:
+##            fragment_type = pane[0].get()
+##            fragment_number = pane[1].get()
+##            if fragment_type and fragment_number:
+##                fragment_inputs.append((fragment_type, fragment_number))
+##            else:
+##                raise ValueError(f"Invalid pane in fragment_entries: {pane}")
+##
+#        # collect orbital inputs if available
+#        if self.other_inp == True:
+#            orbital_inputs = [self.description_orb]
+#            for pane in self.orbital_entries:
+#                orbital_number = pane.get()
+#                if orbital_number:
+#                    orbital_inputs.append(orbital_number)
+#                else:
+#                    raise ValueError(f"Invalid pane in orbital_entries: {pane}")
+#
+#        # collect spatial keyword inputs if available
+#            keywd_inputs = [self.description_key]
+#            for pane in self.keywd_entries:
+#                keywd_type = pane[0].get()
+#                keywd_number = pane[1].get()
+#                if keywd_type and keywd_number:
+#                    keywd_inputs.append((keywd_type, keywd_number))
+#                else:
+#                    raise ValueError(f"Invalid pane in keyword_entries: {pane}")
+#
+#            # Generate input string
+#            self.input_text = f"{self.fname}\n"
+#            self.input_text += "$ctrl\n"
+#            self.input_text += " ".join(f"{key}={value}" for key, value in self.ctrl_inputs.items() if key != "fragments" and key != "orbital")
+#            self.input_text += "\n$end"
+#            self.input_text += "\n$frag\n"
+#            self.input_text += f"{self.description}\n"
+#            for frag in fragment_inputs[1:]:
+#                self.input_text += f"{frag[0]} {frag[1]}\n"
+#            self.input_text += "$end"
+#            self.input_text += "\n$orb\n"
+#            self.input_text += f"{self.description_orb}\n"
+#            for orb in orbital_inputs[1:]:
+#                self.input_text += f"{orb}\n"
+#            self.input_text += "$end\n"
+#            for keywd in keywd_inputs[1:]:
+#                self.input_text += f"{keywd[0]} {keywd[1]}\n"
+#
+#            self.show_result(self.input_text)
+#            
+#            return(orbital_inputs, keywd_inputs)
+#            
+#    
+#
+#    def get_data(self):
+#        input_text1=self.input_text
+#        return input_text1
+#    def get_file_name(self):
+#        print('file_name',self.fname)
+#        return self.fname
 
 class analyse_inputs:
-    def __init__(self, input_data):
-        self.input_data=input_data
+    def __init__(self, ctrl_data, fragment_data, orbital_data, spl_keywd_data):
+        self.ctrl_data=ctrl_data
+        self.fragment_data = fragment_data
+        self.orbital_data = orbital_data 
+        self.spl_keywd_inputs = spl_keywd_data
 
-    def creat_input(self, file_name1):
-        # Write the input text to a file
-        self.file_name=''.join([file_name1, ".xmi"])
-        with open(self.file_name, 'w') as f:
-            f.write(self.input_data)
-    def run_Fortran(self):
-        #Calling the Fortran executable using subprocess
-        process = subprocess.Popen(['./my_program',self.file_name], 
-                                   stdout=subprocess.PIPE, 
-                                   stderr=subprocess.PIPE)
+    def creat_input(self):
+        self.keys_int = []       # List for ctrl keywd 
+        self.values_int = []     # List for ctrl keywd's int input
+        self.keys_str = []       # List for ctrl keywd
+        self.values_str = []     # List for ctrl keywd's char input
+        self.frag_type = []      # List for fragment type
+        self.frag_atn = []       # List for associated atoms
+
+
+        for i, (k, v) in enumerate(self.ctrl_data.items()):
+            print('i', i, 'key', k, 'value', v)
+
+            if i != 0 and i != 4:  # Check if the index is neither 0 nor 4
+                self.keys_int.append(k)
+                self.values_int.append(int(v))  # Convert to integer
+            else:
+                # Handle special cases for indices 0 and 4 (if any, as per your logic)
+                self.keys_str.append(k)
+                self.values_str.append(v)
+
+
+        print('self.values_int',self.values_int)
+        print('self.keys', self.keys_int)
         
-        stdout, stderr = process.communicate()
+    def run_Fortran(self):
+        cisvb.cisvb_inp(self.keys_int, self.values_int, len(self.keys_int),
+                        self.keys_str, self.values_str, len(self.keys_str) )
+    
         if process.returncode != 0:
             print(f"Error running Fortran program: {stderr.decode()}")
         else:
@@ -444,10 +374,14 @@ class Output:
 
 def open_second_root():
     # getting inputs and trasfer for analyse and creating input file
-    input_data=inputc.get_data()
-    file_name=inputc.get_file_name()
-    result=analyse_inputs(input_data)
-    result.creat_input(file_name)
+    ctrl_data,fragment_inputs, orbital_inputs, keywd_inputs=inputc.generate_input()
+    print('ctrl_data',ctrl_data)
+#    input_data=inputc.get_data()
+#    file_name=inputc.get_file_name()
+#    result=analyse_inputs(input_data)
+    result=analyse_inputs(ctrl_data, fragment_inputs, orbital_inputs, keywd_inputs)
+#    result.creat_input(file_name)
+    result.creat_input()
     result.run_Fortran()     # instance to run fortran code
 
     # opening new Tkinter window and showing the results
@@ -461,14 +395,34 @@ def open_second_root():
 def finish():
     sys.exit()
 
+def create_orb(root):
+    Orb_Input(root)
+
+def create_keywd(root):
+    Spl_Keywd(root)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    inputc = Input_creater(root)
+    root.title("Input File Creator")
+    root.geometry("500x400")
+    inputc = Ctrl_Input(root)
+    inputc.create_ctrl_pans()
+
+    orbital_button = ttk.Button(root, text="Orbitals", command=create_orb(root))
+    orbital_button.grid(row=1, column=0, padx=5, pady=10)
+
+    keywd_button = ttk.Button(root, text="spatial keywords", command=create_keywd(root))
+    keywd_button.grid(row=1, column=1, padx=5, pady=10)
+
     run_button = ttk.Button(root, text="RUN", command=open_second_root)
-    run_button.grid(row=1, column=0, pady=10)
+    run_button.grid(row=2, column=0, pady=10)
+
+#    reset_button = ttk.Button(root, text="Reset", command=self.reset_fields)
+#    reset_button.grid(row=12, column=2, padx=5, pady=10, sticky=tk.W)
+
     close_button = ttk.Button(root, text="FINISH", command=finish)
-    close_button.grid(row=2, column=0, pady=10)
+    close_button.grid(row=2, column=1, pady=10)
 
     root.mainloop()
+
 #if __name__ == "__main__":

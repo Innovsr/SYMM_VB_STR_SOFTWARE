@@ -12,7 +12,8 @@ integer::chinst,orbsl1(50),k8,k9,sl2(10),MDP1
 logical :: fileexists
 character(len=35)::inputfilename,keywd(15,50),line7(50),line
 character(len=4)::lname
-character(len=55)::sttr,charst(500),string(4,50)
+character(len=200)::charst(500)
+character(len=55)::sttr,string(4,50)
 character(len=90)::line3,line2,line4,line5,line6
 character(len=200)::lowercase
 integer::atsymset(20,20),nsym,syn(50),at_sym(50),fragorb,ifrag,iorb,ibfi
@@ -719,6 +720,8 @@ norbsym(1)=k7
 norbsym(2)=k8
 norbsym(3)=k9
 
+print*,'norbsym',(norbsym(j),j=1,4)
+stop
 
 endif
 

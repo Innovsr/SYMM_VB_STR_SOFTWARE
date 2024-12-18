@@ -1,3 +1,6 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! This function changes keyword into lower case before cheking them so that 
+!! user can put case-free letters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function lowercase(line)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -12,15 +15,15 @@ data lower/'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',&
 
 l=len(line)
 
-do j=1,l
-line1=line(j:j)
-do i=1,26
-if(line1.eq.upper(i))then
-line(j:j)=lower(i)
-goto 100
-endif
-enddo
-100 enddo
+loop1:do j=1,l
+  line1=line(j:j)
+  do i=1,26
+    if(line1.eq.upper(i))then
+      line(j:j)=lower(i)
+      cycle loop1
+    endif
+  enddo
+enddo loop1
 
 lowercase=line
 return

@@ -1,6 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine prio_rad_str(nl,str1,ncqs,pref_radical)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! this subroutine calculate the scores for priority radical provided by the users
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 use commondat
 implicit none
 
@@ -12,85 +15,73 @@ integer::str1(15000,20),qual1(15000),qcs_serial(15000),q_fac(15000)
 
 
 print*,'enter prio_rad_str'
+
+! initialise the priority scores
 do i=1,15000
-!pref_radical(i)=2
-pref_radical(i)=nlast+1
+  pref_radical(i)=nlast+1
 enddo
 
-!print*,'nlpset',nlpset
-if(nlpset.eq.0)goto 102
-do i5=1,nlpset
-ii=0
-do i=1,nl*2,2
-!print*,'i',i
-do j=1,nl
-if(plpair(i5,j).eq.str1(1,i))then
-ii=ii+1
+if(nlpset.ne.0) then
+  loop1:do i5=1,nlpset
+    ii=0
+    do i=1,nl*2,2
+      do j=1,nl
+        if(plpair(i5,j).eq.str1(1,i))then
+          ii=ii+1
+        endif
+      enddo
+    enddo
+    if(ii.ne.nl) cycle loop1
+    if(ii.eq.nl)then
+      jj=i5
+      if(plpair(i5,nl+1).ne.0.) goto 100
+      if(plpair(i5,nl+1).eq.0.) goto 102
+    endif
+  enddo loop1
+  return
 endif
-enddo
-enddo
-!print*,'ii',ii
-if(ii.ne.nl) goto 103
-if(ii.eq.nl)then
-jj=i5
-if(plpair(i5,nl+1).ne.0.)goto 100
-if(plpair(i5,nl+1).eq.0.)goto 102
-endif
-103 enddo
-goto 101
-!102 print*,'i51',jj,plpair(i5,nl+1)
 
 
-!102 print*,'sourav'
 102 do i=1,ncqs
-!print*,'sourav1',(str1(i,i4),i4=1,nae)
-do j=1,prad
-!print*,'norad',norad(j)
-ii=0
-do i3=1,norad(j)
-do i4=nae-nlast+1,nae
-if(str1(i,i4).eq.prio_rad(j,i3))then
-ii=ii+1
-endif
-enddo
-enddo
-if(ii.eq.norad(j))then
-pref_radical(i)=pref_radical(i)-1
-!print*,'pref_radical(i)',pref_radical(i)
-endif
-enddo
+  do j=1,prad
+    ii=0
+    do i3=1,norad(j)
+      do i4=nae-nlast+1,nae
+        if(str1(i,i4).eq.prio_rad(j,i3))then
+          ii=ii+1
+        endif
+      enddo
+    enddo
+    if(ii.eq.norad(j))then
+      pref_radical(i)=pref_radical(i)-1
+    endif
+  enddo
 enddo
 
-!print*,'sourav2'
-if(nlpset.eq.0)goto 101
-100 if(plpair(jj,nl+1).eq.0) goto 101
+if(nlpset.eq.0) then
+   return
+endif
+
+100 if(plpair(jj,nl+1).eq.0) return
 
 
 do i=1,ncqs
-do j=nl+1,lp(jj)
-i7=plpair(jj,j)
-ii=0
-do i3=1,norad(i7)
-do i4=nae-nlast+1,nae
-if(str1(i,i4).eq.prio_rad(i7,i3))then
-ii=ii+1
-endif
-enddo
-enddo
-!print*,'norad(i7)',norad(i7)
-if(ii.eq.norad(i7))then
-pref_radical(i)=pref_radical(i)-1
-endif
-enddo
+  do j=nl+1,lp(jj)
+    i7=plpair(jj,j)
+    ii=0
+    do i3=1,norad(i7)
+      do i4=nae-nlast+1,nae
+        if(str1(i,i4).eq.prio_rad(i7,i3))then
+          ii=ii+1
+        endif
+      enddo
+    enddo
+    if(ii.eq.norad(i7))then
+      pref_radical(i)=pref_radical(i)-1
+    endif
+  enddo
 enddo
 
-!101 enddo
-
-
-!101 do m19=1,ncqs
-!!print*,'pref_rad',pref_radical(m19)
-!write(*,231),m19,(str1(m19,i4),i4=1,nae)
-!enddo
 231 format(30I3)
 
 print*,'exit prio_rad_str'

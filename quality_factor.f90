@@ -15,7 +15,7 @@ integer::i,j,nl,qt,qt_cnt(10),ncqs,i9,m16,m17,m18,m19,qtg,str1(15000,20),equalit
 integer::atsymset(20,20),nsym,syn(50),at_sym(50),fchrgq(15000)
 
 
-!print*,'itb,syb,nnb,radical,mnbond',itb,syb,nnb,radical,mnbond
+print*,'itb,syb,nnb,radical,mnbond',itb,syb,nnb,radical,mnbond
 
 if(qflg.eq.1)then 
   do j=1,ncqs

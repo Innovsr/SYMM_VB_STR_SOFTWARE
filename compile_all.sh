@@ -56,11 +56,15 @@ program_main.f90
 OBJECT_FILES=$(echo $SOURCE_FILES | sed 's/\.f90/\.o/g')
 
 # Compile the source files into object files
-gfortran -c $SOURCE_FILES
+#gfortran -ffpe-trap=underflow,denormal -g -fbacktrace -c $SOURCE_FILES
+gfortran -ffpe-summary=none -c $SOURCE_FILES
+#gfortran -g -fcheck=all -c $SOURCE_FILES
 #mpif90.openmpi -g -fcheck=all -c $SOURCE_FILES
 
 # Link the object files into an executable
-gfortran -o symm_str $OBJECT_FILES
+#gfortran -ffpe-trap=underflow,denormal -g -fbacktrace -o symm_str $OBJECT_FILES
+gfortran -ffpe-summary=none -o symm_str $OBJECT_FILES
+#gfortran -g -fcheck=all -o symm_str $OBJECT_FILES
 #mpif90.openmpi -g -fcheck=all -o symm_str $OBJECT_FILES
 
 # Clean up object files if no longer needed
